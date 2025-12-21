@@ -1,0 +1,13 @@
+[build]
+  command = "npm run build"
+  publish = ".next"
+
+[build.environment]
+  NODE_VERSION = "20"
+
+# Next.js plugin for Netlify (auto-detected, but explicit is better)
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+
+# Environment variables will be set in Netlify dashboard:
+# NEXT_PUBLIC_API_URL = https://your-backend.onrender.com
