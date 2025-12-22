@@ -4,6 +4,9 @@ import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Bot, User } from "lucide-react";
 import ReactMarkdown from "react-markdown";
+import remarkMath from "remark-math";
+import rehypeKatex from "rehype-katex";
+import "katex/dist/katex.min.css";
 
 interface ChatMessageProps {
   role: "user" | "assistant";
@@ -39,6 +42,8 @@ export function ChatMessage({ role, content, isStreaming }: ChatMessageProps) {
         <div className="prose prose-sm dark:prose-invert max-w-none">
           {content ? (
             <ReactMarkdown
+              remarkPlugins={[remarkMath]}
+              rehypePlugins={[rehypeKatex]}
               components={{
                 pre: ({ children }) => (
                   <pre className="overflow-x-auto rounded-lg bg-muted p-4 text-sm">
