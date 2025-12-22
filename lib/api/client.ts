@@ -13,6 +13,7 @@ class ApiClient {
       headers: {
         "Content-Type": "application/json",
       },
+      withCredentials: true, // Include cookies for auth
     });
 
     // Request interceptor
@@ -27,6 +28,18 @@ class ApiClient {
     this.client.interceptors.response.use(
       (response) => response.data,
       (error: AxiosError) => {
+        // Handle 401 Unauthorized - redirect to login
+        if (error.response?.status === 401) {
+          if (typeof window !== "undefined" && !window.location.pathname.includes("/login")) {
+            window.location.href = "/login";
+          }
+          return Promise.reject({
+            type: "auth_error",
+            message: "Authentication required",
+            status: 401,
+          });
+        }
+
         if (error.response?.status === 429) {
           const retryAfter = error.response.headers["retry-after"];
           return Promise.reject({
@@ -79,6 +92,7 @@ class ApiClient {
         "Content-Type": "application/json",
         ...(this.sessionId && { "X-Session-ID": this.sessionId }),
       },
+      credentials: "include", // Include cookies for auth
       body: JSON.stringify({ question, session_id: this.sessionId }),
     });
 

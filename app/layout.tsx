@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { QueryProvider } from "@/components/providers/query-provider";
-import { Navigation } from "@/components/shared/navigation";
+import { AuthProvider } from "@/components/providers/auth-provider";
 import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 
@@ -32,12 +32,9 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <QueryProvider>
-            <div className="flex min-h-screen">
-              <Navigation />
-              <main className="flex-1 overflow-auto bg-background">
-                {children}
-              </main>
-            </div>
+            <AuthProvider>
+              {children}
+            </AuthProvider>
             <Toaster />
           </QueryProvider>
         </ThemeProvider>

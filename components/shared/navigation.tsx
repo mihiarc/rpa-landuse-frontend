@@ -13,9 +13,11 @@ import {
   Menu,
   X,
   TreeDeciduous,
+  LogOut,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
+import { useAuth } from "@/lib/hooks/use-auth";
 
 const navItems = [
   { href: "/", label: "Home", icon: Home },
@@ -29,6 +31,7 @@ const navItems = [
 export function Navigation() {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
+  const { logout } = useAuth();
 
   return (
     <>
@@ -84,8 +87,16 @@ export function Navigation() {
           </nav>
 
           {/* Footer */}
-          <div className="px-6 py-4 border-t">
-            <p className="text-xs text-muted-foreground">
+          <div className="px-3 py-4 border-t space-y-3">
+            <Button
+              variant="ghost"
+              className="w-full justify-start gap-3 text-muted-foreground hover:text-foreground"
+              onClick={logout}
+            >
+              <LogOut className="h-5 w-5" />
+              Sign Out
+            </Button>
+            <p className="text-xs text-muted-foreground px-3">
               USDA Forest Service
               <br />
               RPA Assessment 2020
