@@ -6,12 +6,43 @@ import { Bot, User } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
+import remarkGfm from "remark-gfm";
 import "katex/dist/katex.min.css";
 
 interface ChatMessageProps {
   role: "user" | "assistant";
   content: string;
   isStreaming?: boolean;
+}
+
+/**
+ * Normalize content for proper markdown and LaTeX rendering:
+ * 1. Convert LaTeX delimiters: [ ... ] -> $$ ... $$ and \( ... \) -> $ ... $
+ * 2. Ensure proper newlines around markdown elements (headings, lists)
+ */
+function normalizeContent(content: string): string {
+  let normalized = content;
+
+  // Convert display math: [ ... ] -> $$ ... $$
+  // Match [ followed by LaTeX-like content (with backslashes) and ]
+  normalized = normalized.replace(/\[\s*(\\[^[\]]+)\s*\]/g, '$$$$$1$$$$');
+
+  // Convert inline math: \( ... \) -> $ ... $
+  normalized = normalized.replace(/\\\(([^)]+)\\\)/g, '$$$1$$');
+
+  // Ensure newlines before markdown headings (# ## ### etc.)
+  // Look for # at start or after non-newline characters
+  normalized = normalized.replace(/([^\n])(\n?)(#{1,6}\s)/g, '$1\n\n$3');
+
+  // Ensure newlines before list items (- or * or numbered)
+  // Only add if not already at start of line
+  normalized = normalized.replace(/([^\n])\n([-*]\s)/g, '$1\n\n$2');
+  normalized = normalized.replace(/([^\n])\n(\d+\.\s)/g, '$1\n\n$2');
+
+  // Ensure blank line after headings if followed by text
+  normalized = normalized.replace(/(#{1,6}\s[^\n]+)\n([^#\n-*\d])/g, '$1\n\n$2');
+
+  return normalized;
 }
 
 export function ChatMessage({ role, content, isStreaming }: ChatMessageProps) {
@@ -42,7 +73,7 @@ export function ChatMessage({ role, content, isStreaming }: ChatMessageProps) {
         <div className="prose prose-sm dark:prose-invert max-w-none">
           {content ? (
             <ReactMarkdown
-              remarkPlugins={[remarkMath]}
+              remarkPlugins={[remarkGfm, remarkMath]}
               rehypePlugins={[rehypeKatex]}
               components={{
                 pre: ({ children }) => (
@@ -69,7 +100,7 @@ export function ChatMessage({ role, content, isStreaming }: ChatMessageProps) {
                 ),
               }}
             >
-              {content}
+              {normalizeContent(content)}
             </ReactMarkdown>
           ) : isStreaming ? (
             <div className="flex items-center gap-1">
