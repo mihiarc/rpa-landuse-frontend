@@ -16,57 +16,18 @@ interface ChatMessageProps {
 }
 
 /**
- * Normalize content for proper markdown and LaTeX rendering:
- * 1. Convert LaTeX delimiters: [ ... ] -> $$ ... $$ and \( ... \) -> $ ... $
- * 2. Fix tables that are on single lines
- * 3. Fix numbered lists that are inline
- * 4. Ensure proper newlines around markdown elements
+ * Normalize content for proper rendering.
+ * Keeps it simple - only handles LaTeX delimiter conversion.
+ * The backend prompt now instructs the LLM to format markdown properly.
  */
 function normalizeContent(content: string): string {
   let normalized = content;
 
-  // Convert display math: [ ... ] -> $$ ... $$
+  // Convert display math: [ ... ] -> $$ ... $$ (LLM sometimes uses brackets)
   normalized = normalized.replace(/\[\s*(\\[^[\]]+)\s*\]/g, '$$$$$1$$$$');
 
   // Convert inline math: \( ... \) -> $ ... $
   normalized = normalized.replace(/\\\(([^)]+)\\\)/g, '$$$1$$');
-
-  // FIX TABLES: The LLM outputs tables on one line like:
-  // "| Col1 | Col2 | |------|------| | Val1 | Val2 | | Val3 | Val4 |"
-  // We need to split at "| |" boundaries to create proper rows
-
-  // Step 1: Add newline before alignment row (|---|---|)
-  // This pattern: "| |---" or "| |:--" indicates start of alignment row
-  normalized = normalized.replace(/\|\s+\|(\s*[-:]+)/g, '|\n|$1');
-
-  // Step 2: Add newline after alignment row ends and before data rows start
-  // Pattern: "---| |" followed by a letter/number indicates end of alignment, start of data
-  normalized = normalized.replace(/([-:]+\|)\s+\|\s*([A-Za-z0-9])/g, '$1\n| $2');
-
-  // Step 3: Add newline between data rows
-  // Pattern: "| |" followed by text (but not dashes)
-  normalized = normalized.replace(/\|\s+\|\s*([A-Za-z0-9])/g, '|\n| $1');
-
-  // Fix numbered lists that are inline: "1. Item text 2. Item text"
-  normalized = normalized.replace(/([.!?:,])\s+(\d+)\.\s+([A-Z])/g, '$1\n\n$2. $3');
-
-  // Also handle cases like "text: 1. Item"
-  normalized = normalized.replace(/:\s*(\d+)\.\s+/g, ':\n\n$1. ');
-
-  // Fix bullet lists that are inline
-  normalized = normalized.replace(/([.!?])\s+([-*])\s+/g, '$1\n\n$2 ');
-
-  // Ensure newlines before markdown headings (# ## ### etc.)
-  normalized = normalized.replace(/([^\n])(\s*)(#{1,6}\s)/g, '$1\n\n$3');
-
-  // Ensure blank line before bold section headers like "**Section:**"
-  normalized = normalized.replace(/([.!?])\s+(\*\*[^*]+:\*\*)/g, '$1\n\n$2');
-
-  // Ensure newlines before "Insights:", "Conclusion:", etc.
-  normalized = normalized.replace(/([.!?])\s+(Insights|Conclusion|Summary|Analysis|Results|Key Findings):/gi, '$1\n\n**$2:**');
-
-  // Clean up multiple consecutive newlines (more than 2)
-  normalized = normalized.replace(/\n{3,}/g, '\n\n');
 
   return normalized;
 }
