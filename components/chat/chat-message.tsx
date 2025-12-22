@@ -18,7 +18,9 @@ interface ChatMessageProps {
 /**
  * Normalize content for proper markdown and LaTeX rendering:
  * 1. Convert LaTeX delimiters: [ ... ] -> $$ ... $$ and \( ... \) -> $ ... $
- * 2. Ensure proper newlines around markdown elements (headings, lists)
+ * 2. Fix tables that are on single lines
+ * 3. Fix numbered lists that are inline
+ * 4. Ensure proper newlines around markdown elements
  */
 function normalizeContent(content: string): string {
   let normalized = content;
@@ -30,17 +32,41 @@ function normalizeContent(content: string): string {
   // Convert inline math: \( ... \) -> $ ... $
   normalized = normalized.replace(/\\\(([^)]+)\\\)/g, '$$$1$$');
 
+  // Fix tables that are on a single line
+  // Pattern: | header | header | |---| | value | value |
+  // Split at || which indicates where rows should be
+  normalized = normalized.replace(/\|\s*\|(?=\s*[^|])/g, '|\n|');
+
+  // Fix table rows - add newline before | that starts a new row after a closing |
+  // But not for ||--- which is alignment row
+  normalized = normalized.replace(/\|\s*\|\s*(?=[A-Za-z0-9])/g, '|\n| ');
+
+  // Fix alignment row (|---|---|) - ensure it's on its own line
+  normalized = normalized.replace(/\|\s*(\|[-:]+)+\|/g, (match) => {
+    return '\n' + match + '\n';
+  });
+
+  // Fix numbered lists that are inline: "1. Item text 2. Item text"
+  // Add newlines before numbered list items (but not at the start)
+  normalized = normalized.replace(/([.!?:,])\s+(\d+)\.\s+([A-Z])/g, '$1\n\n$2. $3');
+
+  // Also handle cases like "text: 1. Item"
+  normalized = normalized.replace(/:\s*(\d+)\.\s+/g, ':\n\n$1. ');
+
+  // Fix bullet lists that are inline
+  normalized = normalized.replace(/([.!?])\s+([-*])\s+/g, '$1\n\n$2 ');
+
   // Ensure newlines before markdown headings (# ## ### etc.)
-  // Look for # at start or after non-newline characters
-  normalized = normalized.replace(/([^\n])(\n?)(#{1,6}\s)/g, '$1\n\n$3');
+  normalized = normalized.replace(/([^\n])(\s*)(#{1,6}\s)/g, '$1\n\n$3');
 
-  // Ensure newlines before list items (- or * or numbered)
-  // Only add if not already at start of line
-  normalized = normalized.replace(/([^\n])\n([-*]\s)/g, '$1\n\n$2');
-  normalized = normalized.replace(/([^\n])\n(\d+\.\s)/g, '$1\n\n$2');
+  // Ensure blank line before bold section headers like "**Section:**"
+  normalized = normalized.replace(/([.!?])\s+(\*\*[^*]+:\*\*)/g, '$1\n\n$2');
 
-  // Ensure blank line after headings if followed by text
-  normalized = normalized.replace(/(#{1,6}\s[^\n]+)\n([^#\n-*\d])/g, '$1\n\n$2');
+  // Ensure newlines before "Insights:", "Conclusion:", etc.
+  normalized = normalized.replace(/([.!?])\s+(Insights|Conclusion|Summary|Analysis|Results|Key Findings):/gi, '$1\n\n**$2:**');
+
+  // Clean up multiple consecutive newlines (more than 2)
+  normalized = normalized.replace(/\n{3,}/g, '\n\n');
 
   return normalized;
 }

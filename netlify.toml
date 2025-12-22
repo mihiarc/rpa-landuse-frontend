@@ -5,7 +5,7 @@
 [build.environment]
   NODE_VERSION = "20"
   # Cache bust - increment to force fresh install
-  CACHE_BUST = "2024122202"
+  CACHE_BUST = "2024122203"
 
 # Next.js plugin for Netlify (auto-detected, but explicit is better)
 [[plugins]]
