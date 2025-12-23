@@ -17,8 +17,7 @@ interface ChatMessageProps {
 
 /**
  * Normalize content for proper rendering.
- * Keeps it simple - only handles LaTeX delimiter conversion.
- * The backend prompt now instructs the LLM to format markdown properly.
+ * Handles LaTeX delimiters and ensures markdown tables have proper newlines.
  */
 function normalizeContent(content: string): string {
   let normalized = content;
@@ -28,6 +27,19 @@ function normalizeContent(content: string): string {
 
   // Convert inline math: \( ... \) -> $ ... $
   normalized = normalized.replace(/\\\(([^)]+)\\\)/g, '$$$1$$');
+
+  // Fix markdown tables: ensure newlines before/after pipe tables
+  // Match table pattern: | header | header | followed by |---|---| rows
+  normalized = normalized.replace(
+    /([^\n])\s*(\|[^\n]+\|\s*\n\s*\|[-:|\s]+\|)/g,
+    '$1\n\n$2'
+  );
+
+  // Ensure newline after table ends (before non-pipe text)
+  normalized = normalized.replace(
+    /(\|[^\n]+\|)\s*\n\s*([^|\n])/g,
+    '$1\n\n$2'
+  );
 
   return normalized;
 }
@@ -79,11 +91,30 @@ export function ChatMessage({ role, content, isStreaming }: ChatMessageProps) {
                   );
                 },
                 table: ({ children }) => (
-                  <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-border">
+                  <div className="overflow-x-auto my-4">
+                    <table className="min-w-full border border-border rounded-lg overflow-hidden">
                       {children}
                     </table>
                   </div>
+                ),
+                thead: ({ children }) => (
+                  <thead className="bg-muted/50">{children}</thead>
+                ),
+                tbody: ({ children }) => (
+                  <tbody className="divide-y divide-border">{children}</tbody>
+                ),
+                tr: ({ children }) => (
+                  <tr className="hover:bg-muted/30 transition-colors">{children}</tr>
+                ),
+                th: ({ children }) => (
+                  <th className="px-4 py-2 text-left text-sm font-semibold text-foreground border-b border-border">
+                    {children}
+                  </th>
+                ),
+                td: ({ children }) => (
+                  <td className="px-4 py-2 text-sm text-foreground/90">
+                    {children}
+                  </td>
                 ),
               }}
             >
