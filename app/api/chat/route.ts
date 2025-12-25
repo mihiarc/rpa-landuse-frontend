@@ -7,6 +7,13 @@ export async function POST(req: NextRequest) {
 
   const backendUrl = process.env.BACKEND_URL || process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
+  // Extract the last user message as the question
+  // The AI SDK sends messages array, but backend expects { question: string }
+  const lastUserMessage = messages
+    .filter((m: { role: string }) => m.role === "user")
+    .pop();
+  const question = lastUserMessage?.content || "";
+
   try {
     // Forward cookies from the client to the backend for authentication
     const cookies = req.headers.get("cookie") || "";
@@ -17,7 +24,7 @@ export async function POST(req: NextRequest) {
         "Content-Type": "application/json",
         Cookie: cookies,
       },
-      body: JSON.stringify({ messages }),
+      body: JSON.stringify({ question }),
     });
 
     if (!response.ok) {
