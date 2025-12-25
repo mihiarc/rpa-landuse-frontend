@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, FormEvent } from "react";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,11 +17,15 @@ import { AlertCircle, Loader2, Lock } from "lucide-react";
 export default function LoginPage() {
   const [password, setPassword] = useState("");
   const { login, isLoading, error } = useAuth();
+  const router = useRouter();
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (password.trim()) {
-      await login(password);
+      const success = await login(password);
+      if (success) {
+        router.push("/dashboard");
+      }
     }
   };
 
