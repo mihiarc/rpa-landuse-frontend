@@ -1,8 +1,6 @@
 import { useCallback } from "react";
 import { useAuthStore } from "@/stores/auth-store";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-
 interface AuthResponse {
   authenticated: boolean;
   message: string;
@@ -38,7 +36,7 @@ export function useAuth() {
     setError(null);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/v1/auth/login`, {
+      const response = await fetch("/api/auth/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -67,7 +65,7 @@ export function useAuth() {
 
   const logout = useCallback(async (): Promise<void> => {
     try {
-      await fetch(`${API_BASE_URL}/api/v1/auth/logout`, {
+      await fetch("/api/auth/logout", {
         method: "POST",
         credentials: "include",
       });
@@ -81,7 +79,7 @@ export function useAuth() {
     setLoading(true);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/v1/auth/verify`, {
+      const response = await fetch("/api/auth/verify", {
         method: "GET",
         credentials: "include",
       });
@@ -100,7 +98,7 @@ export function useAuth() {
 
   const refresh = useCallback(async (): Promise<boolean> => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/v1/auth/refresh`, {
+      const response = await fetch("/api/auth/refresh", {
         method: "POST",
         credentials: "include",
       });
@@ -123,17 +121,14 @@ export function useAuth() {
       setError(null);
 
       try {
-        const response = await fetch(
-          `${API_BASE_URL}/api/v1/auth/register-academic`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            credentials: "include",
-            body: JSON.stringify({ email: userEmail }),
-          }
-        );
+        const response = await fetch("/api/auth/register-academic", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+          body: JSON.stringify({ email: userEmail }),
+        });
 
         const data: AcademicAuthResponse = await response.json();
 
@@ -164,13 +159,10 @@ export function useAuth() {
 
   const fetchAcademicStatus = useCallback(async (): Promise<void> => {
     try {
-      const response = await fetch(
-        `${API_BASE_URL}/api/v1/auth/academic-status`,
-        {
-          method: "GET",
-          credentials: "include",
-        }
-      );
+      const response = await fetch("/api/auth/academic-status", {
+        method: "GET",
+        credentials: "include",
+      });
 
       const data: AcademicAuthResponse = await response.json();
 
