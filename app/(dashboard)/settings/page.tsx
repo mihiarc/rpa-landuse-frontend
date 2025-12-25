@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Settings, Database, Bot, CheckCircle2, XCircle, HelpCircle } from "lucide-react";
 import { apiClient } from "@/lib/api/client";
+import { CitationCard } from "@/components/shared/citation-card";
 
 export default function SettingsPage() {
   const { data: health, isLoading } = useQuery({
@@ -142,6 +143,9 @@ export default function SettingsPage() {
             </ul>
           </CardContent>
         </Card>
+
+        {/* Citation */}
+        <CitationCard />
 
         {/* About */}
         <Card>

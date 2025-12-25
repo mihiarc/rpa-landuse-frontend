@@ -18,14 +18,15 @@ import {
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { useAuth } from "@/lib/hooks/use-auth";
+import { QuotaIndicator } from "@/components/shared/quota-indicator";
 
 const navItems = [
-  { href: "/", label: "Home", icon: Home },
-  { href: "/chat", label: "Chat", icon: MessageSquare },
-  { href: "/analytics", label: "Analytics", icon: BarChart3 },
-  { href: "/explorer", label: "Explorer", icon: Database },
-  { href: "/extraction", label: "Extract", icon: Download },
-  { href: "/settings", label: "Settings", icon: Settings },
+  { href: "/dashboard", label: "Home", icon: Home },
+  { href: "/dashboard/chat", label: "Chat", icon: MessageSquare },
+  { href: "/dashboard/analytics", label: "Analytics", icon: BarChart3 },
+  { href: "/dashboard/explorer", label: "Explorer", icon: Database },
+  { href: "/dashboard/extraction", label: "Extract", icon: Download },
+  { href: "/dashboard/settings", label: "Settings", icon: Settings },
 ];
 
 export function Navigation() {
@@ -85,6 +86,9 @@ export function Navigation() {
               );
             })}
           </nav>
+
+          {/* Quota Indicator for Academic Users */}
+          <QuotaIndicator />
 
           {/* Footer */}
           <div className="px-3 py-4 border-t space-y-3">

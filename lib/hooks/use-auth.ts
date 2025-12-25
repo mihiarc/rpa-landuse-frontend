@@ -8,8 +8,30 @@ interface AuthResponse {
   message: string;
 }
 
+interface AcademicAuthResponse {
+  authenticated: boolean;
+  email: string;
+  queries_remaining: number;
+  daily_limit: number;
+  message: string;
+}
+
 export function useAuth() {
-  const { isAuthenticated, isLoading, error, setAuthenticated, setLoading, setError, reset } = useAuthStore();
+  const {
+    isAuthenticated,
+    isLoading,
+    error,
+    email,
+    tier,
+    queriesRemaining,
+    dailyLimit,
+    setAuthenticated,
+    setLoading,
+    setError,
+    setAcademicUser,
+    updateQueriesRemaining,
+    reset,
+  } = useAuthStore();
 
   const login = useCallback(async (password: string): Promise<boolean> => {
     setLoading(true);
@@ -95,13 +117,90 @@ export function useAuth() {
     }
   }, [setAuthenticated]);
 
+  const registerEmail = useCallback(
+    async (userEmail: string): Promise<void> => {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const response = await fetch(
+          `${API_BASE_URL}/api/v1/auth/register-academic`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            credentials: "include",
+            body: JSON.stringify({ email: userEmail }),
+          }
+        );
+
+        const data: AcademicAuthResponse = await response.json();
+
+        if (data.authenticated) {
+          setAuthenticated(true);
+          setAcademicUser({
+            email: data.email,
+            tier: "academic",
+            queriesRemaining: data.queries_remaining,
+            dailyLimit: data.daily_limit,
+          });
+          setLoading(false);
+        } else {
+          setError(data.message);
+          setLoading(false);
+          throw new Error(data.message);
+        }
+      } catch (err) {
+        const message =
+          err instanceof Error ? err.message : "Failed to register";
+        setError(message);
+        setLoading(false);
+        throw err;
+      }
+    },
+    [setAuthenticated, setLoading, setError, setAcademicUser]
+  );
+
+  const fetchAcademicStatus = useCallback(async (): Promise<void> => {
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/api/v1/auth/academic-status`,
+        {
+          method: "GET",
+          credentials: "include",
+        }
+      );
+
+      const data: AcademicAuthResponse = await response.json();
+
+      if (data.authenticated && data.email) {
+        setAcademicUser({
+          email: data.email,
+          tier: data.queries_remaining === 999999 ? "admin" : "academic",
+          queriesRemaining: data.queries_remaining,
+          dailyLimit: data.daily_limit,
+        });
+      }
+    } catch {
+      // Ignore errors fetching status
+    }
+  }, [setAcademicUser]);
+
   return {
     isAuthenticated,
     isLoading,
     error,
+    email,
+    tier,
+    queriesRemaining,
+    dailyLimit,
     login,
     logout,
     verify,
     refresh,
+    registerEmail,
+    fetchAcademicStatus,
+    updateQueriesRemaining,
   };
 }

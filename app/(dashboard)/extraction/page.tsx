@@ -23,7 +23,10 @@ import {
   CheckCircle,
   AlertCircle,
   X,
+  Quote,
 } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import Link from "next/link";
 import {
   useExtractionTemplates,
   useFilterOptions,
@@ -116,6 +119,19 @@ export default function ExtractionPage() {
           Export land use data in various formats for your analysis
         </p>
       </div>
+
+      {/* Citation Reminder */}
+      <Alert className="bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-800">
+        <Quote className="h-4 w-4 text-green-600" />
+        <AlertDescription className="flex items-center justify-between">
+          <span className="text-green-800 dark:text-green-200">
+            Remember to cite this dataset in your research publications.
+          </span>
+          <Link href="/dashboard/settings" className="text-sm font-medium text-green-600 hover:text-green-700 dark:hover:text-green-400">
+            View Citation
+          </Link>
+        </AlertDescription>
+      </Alert>
 
       <Tabs defaultValue="predefined" className="space-y-6">
         <TabsList>

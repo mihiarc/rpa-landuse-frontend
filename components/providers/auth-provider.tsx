@@ -3,12 +3,28 @@
 import { useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/lib/hooks/use-auth";
-import { Navigation } from "@/components/shared/navigation";
 
-const PUBLIC_PATHS = ["/login"];
+// Public paths that don't require authentication
+const PUBLIC_PATHS = ["/", "/login"];
 
 interface AuthProviderProps {
   children: React.ReactNode;
+}
+
+/**
+ * Check if a path is a public (unauthenticated) path.
+ * Public paths are the landing page and login.
+ */
+function isPublicPath(pathname: string): boolean {
+  return PUBLIC_PATHS.includes(pathname);
+}
+
+/**
+ * Check if a path is a dashboard (protected) path.
+ * Dashboard paths start with /dashboard.
+ */
+function isDashboardPath(pathname: string): boolean {
+  return pathname.startsWith("/dashboard");
 }
 
 export function AuthProvider({ children }: AuthProviderProps) {
@@ -23,17 +39,20 @@ export function AuthProvider({ children }: AuthProviderProps) {
   useEffect(() => {
     if (isLoading) return;
 
-    const isPublicPath = PUBLIC_PATHS.includes(pathname);
+    const publicPath = isPublicPath(pathname);
+    const dashboardPath = isDashboardPath(pathname);
 
-    if (!isAuthenticated && !isPublicPath) {
+    // Unauthenticated users trying to access dashboard -> redirect to login
+    if (!isAuthenticated && dashboardPath) {
       router.push("/login");
-    } else if (isAuthenticated && isPublicPath) {
-      router.push("/");
+    }
+    // Authenticated users on login page -> redirect to dashboard
+    else if (isAuthenticated && pathname === "/login") {
+      router.push("/dashboard");
     }
   }, [isAuthenticated, isLoading, pathname, router]);
 
-  const isPublicPath = PUBLIC_PATHS.includes(pathname);
-
+  // Show loading state
   if (isLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
@@ -45,23 +64,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
     );
   }
 
-  // For unauthenticated users on non-public paths, show nothing (redirect happens in useEffect)
-  if (!isAuthenticated && !isPublicPath) {
+  // For unauthenticated users on dashboard paths, show nothing (redirect happens in useEffect)
+  if (!isAuthenticated && isDashboardPath(pathname)) {
     return null;
   }
 
-  // For login page, render only the children (full screen, no navigation)
-  if (isPublicPath) {
-    return <>{children}</>;
-  }
-
-  // For authenticated routes, render full layout with navigation
-  return (
-    <div className="flex min-h-screen">
-      <Navigation />
-      <main className="flex-1 overflow-auto bg-background">
-        {children}
-      </main>
-    </div>
-  );
+  // Navigation is now handled by route group layouts, so just render children
+  return <>{children}</>;
 }

@@ -28,7 +28,7 @@ const features = [
     description:
       "Ask questions about land use transitions in plain English. Our AI translates your questions into optimized database queries.",
     icon: MessageSquare,
-    href: "/chat",
+    href: "/dashboard/chat",
     color: "text-blue-600",
   },
   {
@@ -36,7 +36,7 @@ const features = [
     description:
       "Explore pre-built visualizations including choropleth maps, Sankey diagrams, and scenario comparisons.",
     icon: BarChart3,
-    href: "/analytics",
+    href: "/dashboard/analytics",
     color: "text-green-600",
   },
   {
@@ -44,7 +44,7 @@ const features = [
     description:
       "Write custom SQL queries with an intelligent editor, schema browser, and example templates.",
     icon: Database,
-    href: "/explorer",
+    href: "/dashboard/explorer",
     color: "text-purple-600",
   },
   {
@@ -52,7 +52,7 @@ const features = [
     description:
       "Export filtered datasets in multiple formats (CSV, Excel, JSON, Parquet) for your own analysis.",
     icon: Download,
-    href: "/extraction",
+    href: "/dashboard/extraction",
     color: "text-orange-600",
   },
 ];
@@ -68,7 +68,7 @@ function StatusIcon({ status }: { status: string }) {
   }
 }
 
-export default function HomePage() {
+export default function DashboardPage() {
   const { data: health, isLoading } = useQuery({
     queryKey: ["health"],
     queryFn: () => apiClient.get("/health"),
