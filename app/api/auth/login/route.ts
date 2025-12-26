@@ -20,12 +20,18 @@ export async function POST(req: NextRequest) {
     const nextResponse = NextResponse.json(data, { status: response.status });
 
     // Forward Set-Cookie headers from backend to browser
-    const setCookieHeader = response.headers.get("set-cookie");
-    if (setCookieHeader) {
-      // Parse and forward each cookie
-      setCookieHeader.split(",").forEach((cookie) => {
-        nextResponse.headers.append("Set-Cookie", cookie.trim());
+    // Use getSetCookie() to properly handle cookies with commas in Expires dates
+    const cookies = response.headers.getSetCookie?.() || [];
+    if (cookies.length > 0) {
+      cookies.forEach((cookie) => {
+        nextResponse.headers.append("Set-Cookie", cookie);
       });
+    } else {
+      // Fallback for older Node versions without getSetCookie
+      const setCookieHeader = response.headers.get("set-cookie");
+      if (setCookieHeader) {
+        nextResponse.headers.append("Set-Cookie", setCookieHeader);
+      }
     }
 
     return nextResponse;
