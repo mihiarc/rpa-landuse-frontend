@@ -37,7 +37,7 @@ interface ChatInterfaceProps {
 
 /**
  * Normalize content for proper rendering.
- * Handles LaTeX delimiters, ensures markdown lists and tables have proper newlines.
+ * Handles LaTeX delimiters, ensures markdown lists, tables, and headers have proper newlines.
  */
 function normalizeContent(content: string): string {
   let normalized = content;
@@ -48,17 +48,22 @@ function normalizeContent(content: string): string {
   // Convert inline math: \( ... \) -> $ ... $
   normalized = normalized.replace(/\\\(([^)]+)\\\)/g, '$$$1$$');
 
-  // Fix markdown tables: ensure newlines before/after pipe tables
-  normalized = normalized.replace(
-    /([^\n])\s*(\|[^\n]+\|\s*\n\s*\|[-:|\s]+\|)/g,
-    '$1\n\n$2'
-  );
+  // Fix markdown headers: ensure newline before # ## ### that aren't at line start
+  normalized = normalized.replace(/([^\n])\s*(#{1,3}\s+)/g, '$1\n\n$2');
+
+  // Fix markdown tables: The LLM often outputs tables inline without newlines
+  // Pattern: text | Header | Header | \n |---|---| -> needs newlines
+  // First, find table header rows (| something | something |) and ensure newline before
+  normalized = normalized.replace(/([^\n|])\s*(\|[^|\n]+\|[^|\n]*\|)/g, '$1\n\n$2');
+
+  // Ensure the separator row |---|---| is on its own line
+  normalized = normalized.replace(/(\|[^|\n]+\|)\s*(\|[-:|\s]+\|)/g, '$1\n$2');
+
+  // Ensure newline after separator row before data rows
+  normalized = normalized.replace(/(\|[-:|\s]+\|)\s*(\|[^-|\n])/g, '$1\n$2');
 
   // Ensure newline after table ends (before non-pipe text)
-  normalized = normalized.replace(
-    /(\|[^\n]+\|)\s*\n\s*([^|\n])/g,
-    '$1\n\n$2'
-  );
+  normalized = normalized.replace(/(\|[^\n]+\|)\s*([^|\n\s])/g, '$1\n\n$2');
 
   // Fix numbered lists: ensure newline before "1." "2." etc. that aren't at line start
   normalized = normalized.replace(/([^\n])\s+(\d+\.)\s+/g, '$1\n\n$2 ');
@@ -66,9 +71,8 @@ function normalizeContent(content: string): string {
   // Fix bullet lists: ensure newline before "- " that isn't at line start
   normalized = normalized.replace(/([^\n-])\s+(- )/g, '$1\n\n$2');
 
-  // Ensure double newlines between paragraphs (single \n -> \n\n for markdown)
-  // But preserve intentional line breaks in lists
-  normalized = normalized.replace(/([.!?:])(\s*)(\n)(?!\n)(?![-\d])/g, '$1$2\n\n');
+  // Remove triple dashes that aren't horizontal rules (often used incorrectly by LLMs)
+  normalized = normalized.replace(/\s+---\s+/g, '\n\n');
 
   return normalized;
 }
