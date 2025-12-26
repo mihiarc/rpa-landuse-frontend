@@ -4,6 +4,7 @@ interface AuthState {
   isAuthenticated: boolean;
   isLoading: boolean;
   error: string | null;
+  isVerifying: boolean;
 
   // Academic user info
   email: string | null;
@@ -15,6 +16,7 @@ interface AuthState {
   setAuthenticated: (authenticated: boolean) => void;
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
+  setVerifying: (verifying: boolean) => void;
   setAcademicUser: (info: {
     email: string;
     tier: string;
@@ -29,6 +31,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   isAuthenticated: false,
   isLoading: true,
   error: null,
+  isVerifying: false,
   email: null,
   tier: null,
   queriesRemaining: null,
@@ -37,6 +40,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   setAuthenticated: (authenticated) => set({ isAuthenticated: authenticated }),
   setLoading: (loading) => set({ isLoading: loading }),
   setError: (error) => set({ error }),
+  setVerifying: (verifying) => set({ isVerifying: verifying }),
   setAcademicUser: (info) =>
     set({
       email: info.email,
@@ -50,6 +54,7 @@ export const useAuthStore = create<AuthState>((set) => ({
       isAuthenticated: false,
       isLoading: false,
       error: null,
+      isVerifying: false,
       email: null,
       tier: null,
       queriesRemaining: null,

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/lib/hooks/use-auth";
 
@@ -28,13 +28,35 @@ function isDashboardPath(pathname: string): boolean {
 }
 
 export function AuthProvider({ children }: AuthProviderProps) {
-  const { isAuthenticated, isLoading, verify } = useAuth();
+  const { isAuthenticated, isLoading, verify, refresh } = useAuth();
   const pathname = usePathname();
   const router = useRouter();
+  const hasVerifiedRef = useRef(false);
 
   useEffect(() => {
-    verify();
+    // Only verify once on mount
+    if (!hasVerifiedRef.current) {
+      hasVerifiedRef.current = true;
+      verify();
+    }
   }, [verify]);
+
+  // Optional: Periodic token refresh
+  // Refresh token every 14 minutes (assuming 15 minute token expiry)
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    const refreshInterval = setInterval(
+      () => {
+        refresh().catch(() => {
+          // Token refresh failed, user will be redirected on next API call
+        });
+      },
+      14 * 60 * 1000
+    ); // 14 minutes
+
+    return () => clearInterval(refreshInterval);
+  }, [isAuthenticated, refresh]);
 
   useEffect(() => {
     if (isLoading) return;

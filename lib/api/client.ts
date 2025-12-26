@@ -1,10 +1,17 @@
-import axios, { AxiosInstance, AxiosError } from "axios";
+import axios, { AxiosInstance, AxiosError, InternalAxiosRequestConfig } from "axios";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+
+interface QueuedRequest {
+  resolve: (value: unknown) => void;
+  reject: (error: unknown) => void;
+}
 
 class ApiClient {
   private client: AxiosInstance;
   private sessionId: string | null = null;
+  private isRefreshing = false;
+  private failedRequestsQueue: QueuedRequest[] = [];
 
   constructor() {
     this.client = axios.create({
@@ -27,17 +34,62 @@ class ApiClient {
     // Response interceptor
     this.client.interceptors.response.use(
       (response) => response.data,
-      (error: AxiosError) => {
-        // Handle 401 Unauthorized - redirect to login
-        if (error.response?.status === 401) {
-          if (typeof window !== "undefined" && !window.location.pathname.includes("/login")) {
-            window.location.href = "/login";
+      async (error: AxiosError) => {
+        const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
+
+        // Handle 401 Unauthorized - attempt token refresh
+        if (error.response?.status === 401 && !originalRequest._retry) {
+          // Don't retry auth endpoints to prevent infinite loops
+          const isAuthEndpoint = originalRequest.url?.includes("/auth/");
+          if (isAuthEndpoint) {
+            return this.handleAuthError();
           }
-          return Promise.reject({
-            type: "auth_error",
-            message: "Authentication required",
-            status: 401,
-          });
+
+          originalRequest._retry = true;
+
+          if (this.isRefreshing) {
+            // Queue the request while refresh is in progress
+            return new Promise((resolve, reject) => {
+              this.failedRequestsQueue.push({ resolve, reject });
+            })
+              .then(() => {
+                return this.client(originalRequest);
+              })
+              .catch((err) => {
+                return Promise.reject(err);
+              });
+          }
+
+          this.isRefreshing = true;
+
+          try {
+            // Attempt to refresh the token
+            const refreshResponse = await fetch("/api/auth/refresh", {
+              method: "POST",
+              credentials: "include",
+            });
+
+            if (refreshResponse.ok) {
+              const data = await refreshResponse.json();
+
+              if (data.authenticated) {
+                // Token refresh successful, retry all queued requests
+                this.processQueue(null);
+                this.isRefreshing = false;
+
+                // Retry the original request
+                return this.client(originalRequest);
+              }
+            }
+
+            // Token refresh failed
+            throw new Error("Token refresh failed");
+          } catch (refreshError) {
+            // Clear queue and redirect to login
+            this.processQueue(refreshError);
+            this.isRefreshing = false;
+            return this.handleAuthError();
+          }
         }
 
         if (error.response?.status === 429) {
@@ -60,6 +112,40 @@ class ApiClient {
         });
       }
     );
+  }
+
+  /**
+   * Process the queue of failed requests after token refresh
+   */
+  private processQueue(error: unknown) {
+    this.failedRequestsQueue.forEach((request) => {
+      if (error) {
+        request.reject(error);
+      } else {
+        request.resolve(null);
+      }
+    });
+    this.failedRequestsQueue = [];
+  }
+
+  /**
+   * Handle authentication errors by redirecting to login
+   */
+  private handleAuthError() {
+    if (typeof window !== "undefined" && !window.location.pathname.includes("/login")) {
+      // Try to use Next.js router if available, otherwise fall back to window.location
+      const router = (window as typeof window & { __NEXT_ROUTER__?: { push?: (url: string) => void } }).__NEXT_ROUTER__;
+      if (router?.push) {
+        router.push("/login");
+      } else {
+        window.location.href = "/login";
+      }
+    }
+    return Promise.reject({
+      type: "auth_error",
+      message: "Authentication required",
+      status: 401,
+    });
   }
 
   setSessionId(id: string) {

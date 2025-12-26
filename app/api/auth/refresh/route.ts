@@ -4,12 +4,12 @@ const BACKEND_URL = process.env.BACKEND_URL || process.env.NEXT_PUBLIC_API_URL |
 
 export async function POST(req: NextRequest) {
   try {
-    const cookies = req.headers.get("cookie") || "";
+    const requestCookies = req.headers.get("cookie") || "";
 
     const response = await fetch(`${BACKEND_URL}/api/v1/auth/refresh`, {
       method: "POST",
       headers: {
-        Cookie: cookies,
+        Cookie: requestCookies,
       },
     });
 
@@ -19,9 +19,9 @@ export async function POST(req: NextRequest) {
 
     // Forward Set-Cookie headers for new token
     // Use getSetCookie() to properly handle cookies with commas in Expires dates
-    const cookies = response.headers.getSetCookie?.() || [];
-    if (cookies.length > 0) {
-      cookies.forEach((cookie) => {
+    const responseCookies = response.headers.getSetCookie?.() || [];
+    if (responseCookies.length > 0) {
+      responseCookies.forEach((cookie) => {
         nextResponse.headers.append("Set-Cookie", cookie);
       });
     } else {

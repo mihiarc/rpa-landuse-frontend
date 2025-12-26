@@ -19,6 +19,7 @@ export function useAuth() {
     isAuthenticated,
     isLoading,
     error,
+    isVerifying,
     email,
     tier,
     queriesRemaining,
@@ -26,6 +27,7 @@ export function useAuth() {
     setAuthenticated,
     setLoading,
     setError,
+    setVerifying,
     setAcademicUser,
     updateQueriesRemaining,
     reset,
@@ -76,6 +78,12 @@ export function useAuth() {
   }, [reset]);
 
   const verify = useCallback(async (): Promise<boolean> => {
+    // Prevent concurrent verify calls
+    if (isVerifying) {
+      return isAuthenticated;
+    }
+
+    setVerifying(true);
     setLoading(true);
 
     try {
@@ -88,13 +96,15 @@ export function useAuth() {
 
       setAuthenticated(data.authenticated);
       setLoading(false);
+      setVerifying(false);
       return data.authenticated;
     } catch {
       setAuthenticated(false);
       setLoading(false);
+      setVerifying(false);
       return false;
     }
-  }, [setAuthenticated, setLoading]);
+  }, [isVerifying, isAuthenticated, setAuthenticated, setLoading, setVerifying]);
 
   const refresh = useCallback(async (): Promise<boolean> => {
     try {
