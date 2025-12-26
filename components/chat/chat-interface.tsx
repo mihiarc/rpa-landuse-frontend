@@ -37,7 +37,7 @@ interface ChatInterfaceProps {
 
 /**
  * Normalize content for proper rendering.
- * Handles LaTeX delimiters and ensures markdown tables have proper newlines.
+ * Handles LaTeX delimiters, ensures markdown lists and tables have proper newlines.
  */
 function normalizeContent(content: string): string {
   let normalized = content;
@@ -59,6 +59,16 @@ function normalizeContent(content: string): string {
     /(\|[^\n]+\|)\s*\n\s*([^|\n])/g,
     '$1\n\n$2'
   );
+
+  // Fix numbered lists: ensure newline before "1." "2." etc. that aren't at line start
+  normalized = normalized.replace(/([^\n])\s+(\d+\.)\s+/g, '$1\n\n$2 ');
+
+  // Fix bullet lists: ensure newline before "- " that isn't at line start
+  normalized = normalized.replace(/([^\n-])\s+(- )/g, '$1\n\n$2');
+
+  // Ensure double newlines between paragraphs (single \n -> \n\n for markdown)
+  // But preserve intentional line breaks in lists
+  normalized = normalized.replace(/([.!?:])(\s*)(\n)(?!\n)(?![-\d])/g, '$1$2\n\n');
 
   return normalized;
 }

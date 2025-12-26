@@ -156,9 +156,20 @@
   @apply my-2;
 }
 
-.prose-chat ul,
+.prose-chat ul {
+  @apply my-2 pl-6 list-disc;
+}
+
 .prose-chat ol {
-  @apply my-2 pl-4;
+  @apply my-2 pl-6 list-decimal;
+}
+
+.prose-chat li {
+  @apply my-1;
+}
+
+.prose-chat li::marker {
+  @apply text-muted-foreground;
 }
 
 .prose-chat table {
@@ -195,7 +206,18 @@
   @apply bg-transparent p-0 text-sm;
 }
 
-/* User message prose override - inverted colors */
+/* User message prose - inherits card text color */
 .prose-chat-user {
-  @apply prose prose-sm max-w-none prose-invert;
+  @apply prose prose-sm max-w-none;
+  --tw-prose-body: currentColor;
+  --tw-prose-headings: currentColor;
+  --tw-prose-bold: currentColor;
+  --tw-prose-links: currentColor;
+  --tw-prose-code: currentColor;
+}
+
+.prose-chat-user p,
+.prose-chat-user li,
+.prose-chat-user code {
+  color: inherit;
 }

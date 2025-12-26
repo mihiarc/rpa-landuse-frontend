@@ -108,32 +108,59 @@ export default function DashboardPage() {
           {isLoading ? (
             <p className="text-muted-foreground">Checking status...</p>
           ) : health ? (
-            <div className="flex flex-wrap gap-6">
+            <div className="space-y-4">
+              {/* Overall Status */}
               <div className="flex items-center gap-2">
                 <StatusIcon status={(health as { status: string }).status} />
                 <span className="font-medium">
                   {(health as { status: string }).status === "healthy" ? "All Systems Operational" : (health as { status: string }).status}
                 </span>
               </div>
-              <div className="flex items-center gap-2">
-                {(health as { database?: { connected: boolean } }).database?.connected ? (
-                  <CheckCircle2 className="h-4 w-4 text-green-600" />
-                ) : (
-                  <XCircle className="h-4 w-4 text-red-600" />
-                )}
-                <span className="text-sm text-muted-foreground">
-                  Database: {(health as { database?: { size_mb: number } }).database?.size_mb || 0} MB
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                {(health as { openai?: { configured: boolean } }).openai?.configured ? (
-                  <CheckCircle2 className="h-4 w-4 text-green-600" />
-                ) : (
-                  <XCircle className="h-4 w-4 text-red-600" />
-                )}
-                <span className="text-sm text-muted-foreground">
-                  AI: {(health as { openai?: { model: string } }).openai?.model || "Not configured"}
-                </span>
+
+              {/* Database & AI Status */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Database Status Card */}
+                <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
+                  <Database className="h-5 w-5 text-green-600 mt-0.5" />
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium text-sm">Database</span>
+                      {(health as { database?: { connected: boolean } }).database?.connected ? (
+                        <Badge variant="secondary" className="bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300 text-xs">
+                          Connected
+                        </Badge>
+                      ) : (
+                        <Badge variant="destructive" className="text-xs">Disconnected</Badge>
+                      )}
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {(health as { database?: { path: string } }).database?.path?.startsWith("md:")
+                        ? "MotherDuck Cloud • 5.4M+ records"
+                        : (health as { database?: { message: string } }).database?.message || "Local database"
+                      }
+                    </p>
+                  </div>
+                </div>
+
+                {/* AI Status Card */}
+                <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
+                  <MessageSquare className="h-5 w-5 text-blue-600 mt-0.5" />
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium text-sm">AI Model</span>
+                      {(health as { llm?: { configured: boolean } }).llm?.configured ? (
+                        <Badge variant="secondary" className="bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300 text-xs">
+                          Ready
+                        </Badge>
+                      ) : (
+                        <Badge variant="destructive" className="text-xs">Not Configured</Badge>
+                      )}
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {(health as { llm?: { provider: string } }).llm?.provider || "Unknown"} • {(health as { llm?: { model: string } }).llm?.model || "Not configured"}
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
           ) : (
