@@ -118,12 +118,23 @@ export async function POST(req: NextRequest) {
     // Transform the SSE stream to AI SDK format
     const transformedStream = response.body.pipeThrough(createStreamTransformer());
 
+    // Extract Set-Cookie headers from backend response to forward token refreshes
+    const setCookieHeaders = response.headers.getSetCookie();
+
+    // Build response headers, including any Set-Cookie headers from backend
+    const responseHeaders = new Headers({
+      "Content-Type": "text/plain; charset=utf-8",
+      "Cache-Control": "no-cache",
+      Connection: "keep-alive",
+    });
+
+    // Add Set-Cookie headers from backend (e.g., refreshed tokens)
+    setCookieHeaders.forEach((cookie) => {
+      responseHeaders.append("Set-Cookie", cookie);
+    });
+
     return new Response(transformedStream, {
-      headers: {
-        "Content-Type": "text/plain; charset=utf-8",
-        "Cache-Control": "no-cache",
-        Connection: "keep-alive",
-      },
+      headers: responseHeaders,
     });
   } catch (error) {
     console.error("Backend error:", error);

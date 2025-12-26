@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, FormEvent } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/lib/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,13 +18,17 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const { login, isLoading, error } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // Get redirect URL from query params (set by middleware)
+  const redirectUrl = searchParams.get("redirect") || "/dashboard";
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (password.trim()) {
       const success = await login(password);
       if (success) {
-        router.push("/dashboard");
+        router.push(redirectUrl);
       }
     }
   };

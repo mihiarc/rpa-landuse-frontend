@@ -124,3 +124,78 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Custom scrollbar for dark mode */
+::-webkit-scrollbar {
+  @apply w-2 h-2;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-muted-foreground/30 rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-muted-foreground/50;
+}
+
+/* Markdown styles in chat - optimized for dark mode */
+.prose-chat {
+  @apply prose prose-sm max-w-none;
+  @apply text-foreground;
+}
+
+.dark .prose-chat {
+  @apply prose-invert;
+}
+
+.prose-chat p {
+  @apply my-2;
+}
+
+.prose-chat ul,
+.prose-chat ol {
+  @apply my-2 pl-4;
+}
+
+.prose-chat table {
+  @apply my-2 w-full text-sm border-collapse;
+}
+
+.prose-chat th,
+.prose-chat td {
+  @apply border px-3 py-2;
+  border-color: var(--border);
+}
+
+.prose-chat th {
+  @apply font-semibold text-left;
+  background-color: var(--muted);
+}
+
+.prose-chat tr:hover {
+  background-color: color-mix(in oklch, var(--muted) 50%, transparent);
+}
+
+.prose-chat code {
+  @apply px-1.5 py-0.5 rounded text-xs font-mono;
+  background-color: var(--muted);
+  color: var(--foreground);
+}
+
+.prose-chat pre {
+  @apply p-4 rounded-lg overflow-x-auto my-3;
+  background-color: var(--muted);
+}
+
+.prose-chat pre code {
+  @apply bg-transparent p-0 text-sm;
+}
+
+/* User message prose override - inverted colors */
+.prose-chat-user {
+  @apply prose prose-sm max-w-none prose-invert;
+}

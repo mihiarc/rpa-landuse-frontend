@@ -251,58 +251,10 @@ function MessageBubble({ message }: { message: Message }) {
 
         {/* Message content */}
         {message.content && (
-          <div
-            className={cn(
-              "prose prose-sm dark:prose-invert max-w-none",
-              isUser ? "prose-invert" : ""
-            )}
-          >
+          <div className={isUser ? "prose-chat-user" : "prose-chat"}>
             <ReactMarkdown
               remarkPlugins={[remarkGfm, remarkMath]}
               rehypePlugins={[rehypeKatex]}
-              components={{
-                pre: ({ children }) => (
-                  <pre className="overflow-x-auto rounded-lg bg-muted p-4 text-sm">
-                    {children}
-                  </pre>
-                ),
-                code: ({ children, className }) => {
-                  const isInline = !className;
-                  return isInline ? (
-                    <code className="rounded bg-muted px-1.5 py-0.5 text-sm font-mono">
-                      {children}
-                    </code>
-                  ) : (
-                    <code className="font-mono">{children}</code>
-                  );
-                },
-                table: ({ children }) => (
-                  <div className="overflow-x-auto my-4">
-                    <table className="min-w-full border border-border rounded-lg overflow-hidden">
-                      {children}
-                    </table>
-                  </div>
-                ),
-                thead: ({ children }) => (
-                  <thead className="bg-muted/50">{children}</thead>
-                ),
-                tbody: ({ children }) => (
-                  <tbody className="divide-y divide-border">{children}</tbody>
-                ),
-                tr: ({ children }) => (
-                  <tr className="hover:bg-muted/30 transition-colors">{children}</tr>
-                ),
-                th: ({ children }) => (
-                  <th className="px-4 py-2 text-left text-sm font-semibold text-foreground border-b border-border">
-                    {children}
-                  </th>
-                ),
-                td: ({ children }) => (
-                  <td className="px-4 py-2 text-sm text-foreground/90">
-                    {children}
-                  </td>
-                ),
-              }}
             >
               {normalizeContent(message.content)}
             </ReactMarkdown>
