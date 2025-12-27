@@ -1,90 +1,121 @@
-# RPA Land Use Analytics Frontend
+<div align="center">
 
-Modern Next.js frontend for the RPA Land Use Analytics platform. Built with Next.js 16, React 19, and Tailwind CSS.
+# RPA Land Use Analytics
+
+### Web Application
+
+[![Launch App](https://img.shields.io/badge/Launch%20App-rpalanduse.org-0066cc?style=for-the-badge&logo=rocket&logoColor=white)](https://rpalanduse.org)
+
+<br/>
+
+![Next.js](https://img.shields.io/badge/Next.js-15-black?style=flat-square&logo=nextdotjs)
+![React](https://img.shields.io/badge/React-19-61DAFB?style=flat-square&logo=react)
+![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?style=flat-square&logo=typescript&logoColor=white)
+![Tailwind](https://img.shields.io/badge/Tailwind-3-38B2AC?style=flat-square&logo=tailwindcss&logoColor=white)
+
+</div>
+
+---
 
 ## Features
 
-- **AI Chat Interface** - Natural language queries about land use data with streaming responses
-- **Analytics Dashboard** - Interactive visualizations with Plotly.js charts
-  - Land use distribution overview
-  - Climate scenario comparisons
-  - Urbanization source analysis
-  - Forest transition tracking
-  - Agricultural impact assessment
-- **Data Explorer** - SQL query interface with schema browser
-- **Data Extraction** - Bulk export with predefined templates and custom filters
+| Feature | Description |
+|:--------|:------------|
+| **AI Chat** | Natural language queries with streaming responses |
+| **Analytics Dashboard** | Interactive Plotly.js visualizations for land use trends |
+| **Data Explorer** | SQL query interface with schema browser |
+| **Data Export** | Bulk download with predefined templates and custom filters |
+
+---
 
 ## Tech Stack
 
-- **Framework**: Next.js 16 (App Router)
-- **UI**: Tailwind CSS + shadcn/ui components
-- **State Management**: Zustand
-- **Data Fetching**: TanStack React Query
-- **Charts**: Plotly.js with react-plotly.js
-- **TypeScript**: Full type safety
+- **Framework:** Next.js 15 (App Router)
+- **UI:** Tailwind CSS + shadcn/ui components
+- **State:** Zustand
+- **Data Fetching:** TanStack React Query
+- **Charts:** Plotly.js with react-plotly.js
+- **Language:** TypeScript
 
-## Prerequisites
+---
+
+## Development
+
+### Prerequisites
 
 - Node.js 18+
-- Backend API running at `http://localhost:8000` (see [rpa-landuse](https://github.com/mihiarc/rpa-landuse))
+- Backend API running (see [rpa-landuse-backend](https://github.com/mihiarc/rpa-landuse-backend))
 
-## Getting Started
+### Setup
 
 ```bash
 # Install dependencies
 npm install
 
+# Create environment file
+cp .env.example .env.local
+
 # Start development server
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) in your browser.
+Open [http://localhost:3000](http://localhost:3000)
 
-## Environment Variables
+### Environment Variables
 
-Create a `.env.local` file:
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `NEXT_PUBLIC_API_URL` | Backend API URL | `http://localhost:8000/api/v1` |
+
+### Scripts
 
 ```bash
-NEXT_PUBLIC_API_URL=http://localhost:8000/api/v1
+npm run dev      # Development server
+npm run build    # Production build
+npm run start    # Production server
+npm run lint     # ESLint check
 ```
+
+---
+
+## Deployment
+
+This frontend is deployed on **Netlify** with auto-deploy from the `main` branch.
+
+| Environment | URL |
+|-------------|-----|
+| Production | [rpalanduse.org](https://rpalanduse.org) |
+| Preview | [rpa-landuse-frontend.netlify.app](https://rpa-landuse-frontend.netlify.app) |
+
+---
 
 ## Project Structure
 
 ```
-frontend/
-├── app/                    # Next.js App Router pages
-│   ├── page.tsx           # Home page
-│   ├── chat/              # AI chat interface
-│   ├── analytics/         # Analytics dashboard
-│   ├── explorer/          # SQL query explorer
-│   └── extraction/        # Data extraction tools
-├── components/            # Reusable UI components
-│   └── ui/               # shadcn/ui components
-├── lib/
-│   ├── api.ts            # API client
-│   └── hooks/            # React Query hooks
-├── stores/               # Zustand state stores
-└── types/                # TypeScript type definitions
+app/
+├── login/          # Authentication
+├── dashboard/
+│   ├── chat/       # AI chat interface
+│   ├── analytics/  # Visualization dashboard
+│   ├── explorer/   # SQL query tool
+│   └── extraction/ # Data export
+components/
+├── ui/             # shadcn/ui components
+├── chat/           # Chat interface components
+└── dashboard/      # Dashboard components
+lib/
+├── api.ts          # API client
+└── hooks/          # React Query hooks
+stores/             # Zustand state
+types/              # TypeScript definitions
 ```
 
-## Available Scripts
+---
 
-```bash
-npm run dev      # Start development server
-npm run build    # Build for production
-npm run start    # Start production server
-npm run lint     # Run ESLint
-```
+<div align="center">
 
-## Backend API
+**[rpalanduse.org](https://rpalanduse.org)** | [Core Repository](https://github.com/mihiarc/rpa-landuse) | [Backend API](https://github.com/mihiarc/rpa-landuse-backend)
 
-This frontend requires the FastAPI backend from the main [rpa-landuse](https://github.com/mihiarc/rpa-landuse) repository. Start the backend with:
+MIT License
 
-```bash
-cd backend
-PYTHONPATH=/path/to/rpa-landuse/src uvicorn app.main:app --reload
-```
-
-## License
-
-MIT
+</div>
