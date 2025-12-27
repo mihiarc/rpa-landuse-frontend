@@ -37,6 +37,11 @@ function isStaticPath(pathname: string): boolean {
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
+  // Bypass auth for local development
+  if (process.env.NODE_ENV === "development" && process.env.BYPASS_AUTH === "true") {
+    return NextResponse.next();
+  }
+
   // Skip middleware for static assets and API routes
   if (isStaticPath(pathname) || isApiPath(pathname)) {
     return NextResponse.next();
