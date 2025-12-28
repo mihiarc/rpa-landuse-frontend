@@ -228,6 +228,22 @@ function MessageBubble({ message }: { message: Message }) {
             <ReactMarkdown
               remarkPlugins={[remarkGfm, remarkMath]}
               rehypePlugins={[rehypeKatex]}
+              components={{
+                table: ({ children }) => (
+                  <div className="overflow-x-auto my-4">
+                    <table className="min-w-full border-collapse">{children}</table>
+                  </div>
+                ),
+                thead: ({ children }) => (
+                  <thead className="bg-muted">{children}</thead>
+                ),
+                th: ({ children }) => (
+                  <th className="border border-border px-3 py-2 text-left font-semibold">{children}</th>
+                ),
+                td: ({ children }) => (
+                  <td className="border border-border px-3 py-2">{children}</td>
+                ),
+              }}
             >
               {message.content}
             </ReactMarkdown>
