@@ -173,7 +173,7 @@
 }
 
 .prose-chat table {
-  @apply my-2 w-full text-sm border-collapse;
+  @apply my-4 w-full text-sm border-collapse;
 }
 
 .prose-chat th,
